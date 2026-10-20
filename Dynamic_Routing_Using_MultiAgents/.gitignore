@@ -1,0 +1,33 @@
+# Python generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Local secrets / credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*.json
+*secrets*.json
+
+# Local runtime files
+*.log
+*.pid
+*.sqlite3
+topology.local.json
+simulation_results/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

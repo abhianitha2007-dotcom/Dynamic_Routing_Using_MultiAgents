@@ -1,0 +1,76 @@
+{
+  "devices": [
+    {
+      "name": "PC1",
+      "kind": "PC",
+      "capacity": 5,
+      "queue_limit": 10,
+      "online": true
+    },
+    {
+      "name": "S1",
+      "kind": "SERVER",
+      "capacity": 25,
+      "queue_limit": 50,
+      "online": true
+    },
+    {
+      "name": "R1",
+      "kind": "ROUTER",
+      "capacity": 20,
+      "queue_limit": 50,
+      "online": true
+    },
+    {
+      "name": "R2",
+      "kind": "ROUTER",
+      "capacity": 20,
+      "queue_limit": 50,
+      "online": true
+    },
+    {
+      "name": "SW1",
+      "kind": "SWITCH",
+      "capacity": 30,
+      "queue_limit": 60,
+      "online": true
+    }
+  ],
+  "links": [
+    {
+      "a": "PC1",
+      "b": "SW1",
+      "delay": 3,
+      "bandwidth": 100,
+      "enabled": true
+    },
+    {
+      "a": "SW1",
+      "b": "R1",
+      "delay": 4,
+      "bandwidth": 100,
+      "enabled": true
+    },
+    {
+      "a": "SW1",
+      "b": "R2",
+      "delay": 3,
+      "bandwidth": 100,
+      "enabled": true
+    },
+    {
+      "a": "R1",
+      "b": "S1",
+      "delay": 5,
+      "bandwidth": 120,
+      "enabled": true
+    },
+    {
+      "a": "R2",
+      "b": "S1",
+      "delay": 5,
+      "bandwidth": 120,
+      "enabled": true
+    }
+  ]
+}

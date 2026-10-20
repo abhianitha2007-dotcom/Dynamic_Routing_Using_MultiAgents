@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dynamic Routing Using MultiAgents | Simulator</title>
+  <link rel="stylesheet" href="/styles.css"/>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-icon"><svg viewBox="0 0 32 32"><circle cx="7" cy="16" r="4"/><circle cx="25" cy="7" r="4"/><circle cx="25" cy="25" r="4"/><path d="M11 14L21 8M11 18L21 24"/></svg></div><div><strong>Dynamic Routing</strong><span>Using MultiAgents</span></div></div>
+      <div class="nav-caption">WORKSPACE</div>
+      <button class="nav-item active" id="nav-topology"><span>◈</span> Topology Designer <span class="nav-tag">01</span></button>
+      <button class="nav-item" id="nav-agent"><span>✳</span> Agent Activity <span class="nav-tag">02</span></button>
+      <button class="nav-item" id="nav-scenarios"><span>⚙</span> Scenario Studio <span class="nav-tag">03</span></button>
+      <div class="sidebar-separator"></div>
+      <div class="section-head">ADD DEVICES <span class="muted-mini">Click to add</span></div>
+      <div class="device-palette">
+        <button class="device-button" data-add="PC"><span class="palette-icon blue">▣</span><span><b>Computer</b><small>End device</small></span><span class="plus">+</span></button>
+        <button class="device-button" data-add="ROUTER"><span class="palette-icon teal">⬡</span><span><b>Router</b><small>Routing node</small></span><span class="plus">+</span></button>
+        <button class="device-button" data-add="SWITCH"><span class="palette-icon cyan">⌘</span><span><b>Switch</b><small>Network switch</small></span><span class="plus">+</span></button>
+        <button class="device-button" data-add="SERVER"><span class="palette-icon amber">▤</span><span><b>Server</b><small>Destination</small></span><span class="plus">+</span></button>
+      </div>
+      <button id="connect-mode" class="btn-outline full-width"><span>⌁</span> Create connection</button>
+      <p class="tip">Drag nodes to move them. Click a device or connection to edit or remove it. Double-click empty canvas to add a device.</p>
+      <div class="sidebar-spacer"></div>
+      <div class="agents-mini">
+        <div class="section-head">ACTIVE AGENTS <span class="live-dot"></span></div>
+        <div class="agent-mini-row"><span class="agent-mark main-mark">✳</span><span>Main Orchestrator</span><span class="status-dot"></span></div>
+        <div class="agent-mini-row"><span class="agent-mark">⌁</span><span>Routing / Q-Learning</span><span class="status-dot"></span></div>
+        <div class="agent-mini-row"><span class="agent-mark">◉</span><span>Trust &amp; Congestion</span><span class="status-dot"></span></div>
+        <div class="agent-mini-row"><span class="agent-mark">⇄</span><span>Traffic &amp; Delivery</span><span class="status-dot"></span></div>
+      </div>
+      <div class="footer-note"><span class="live-dot"></span> Local simulation <span class="footer-ver">v0.9 · Refined UI</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div><div class="eyebrow">NETWORK LAB / CONTROL ROOM</div><h1>Dynamic Routing <em>Using MultiAgents</em></h1></div>
+        <div class="top-actions"><span class="local-badge"><span class="live-dot"></span> SIMULATION ONLINE</span><button id="reset-sim" class="header-btn" title="Reset simulation while keeping the topology">↺ <span>Reset run</span></button><button id="export-btn" class="header-btn header-primary">⇩ <span>Export topology</span></button></div>
+      </header>
+
+      <section class="mission-hero" id="mission-section">
+        <div class="mission-intro">
+          <div class="mission-eyebrow"><span class="signal-bars"><i></i><i></i><i></i></span> AI ORCHESTRATOR <span class="mission-round">OPTIONAL</span></div>
+          <h2>Network assistant</h2>
+          <p>Describe a network task. Review the proposed actions before the agents run them.</p>
+          <div class="brain-status"><span class="brain-pulse">✳</span><div><strong>Main Agent</strong><small id="planner-mode">Local planner available</small></div><span class="brain-online">ACTIVE</span></div>
+        </div>
+        <div class="mission-console">
+          <div class="console-heading"><span class="console-index">TASK PLANNER</span><span class="console-availability"><i></i> READY</span></div>
+          <label class="visually-hidden" for="mission-input">Network mission</label>
+          <textarea id="mission-input" rows="3" maxlength="450" placeholder="Example: Find the best route from PC1 to S1"></textarea>
+          <div class="mission-presets"><span>QUICK ACTIONS</span><button type="button" data-mission="route">Find route</button><button type="button" data-mission="attack">Test reliability</button><button type="button" data-mission="traffic">Generate traffic</button></div>
+          <button id="mission-plan" class="mission-cta"><span>Review plan</span><span class="cta-arrow">→</span></button>
+          <div id="mission-error" class="mission-error" role="alert" hidden></div>
+          <div id="mission-proposal" class="mission-proposal" hidden>
+            <div class="proposal-top"><span>PROPOSED PLAN</span><span id="mission-source-mode">OFFLINE</span></div>
+            <strong id="mission-summary">—</strong>
+            <div class="mission-cycle"><span>01 ASSESS</span><span>02 PLAN</span><span>03 ACT</span><span>04 CHECK</span></div>
+            <p id="mission-note"></p>
+            <div class="mission-plan-buttons"><button id="mission-execute" class="mission-approve">▶ Execute mission</button><button id="mission-discard" class="mission-discard">Discard</button></div>
+          </div>
+          <div id="mission-complete" class="mission-complete" hidden></div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Network statistics">
+        <div class="metric-card"><div class="metric-caption">TOTAL DEVICES <span>◈</span></div><div id="metric-devices" class="metric-value">—</div><div class="metric-note"><span class="positive">●</span> Configured nodes</div></div>
+        <div class="metric-card"><div class="metric-caption">PACKETS DELIVERED <span>↗</span></div><div id="metric-delivered" class="metric-value">0</div><div class="metric-note">Successfully received</div></div>
+        <div class="metric-card"><div class="metric-caption">DELIVERY RATIO <span>◉</span></div><div id="metric-pdr" class="metric-value">—</div><div class="metric-note">Delivered / generated</div></div>
+        <div class="metric-card"><div class="metric-caption">IN-FLIGHT PACKETS <span>⌁</span></div><div id="metric-queued" class="metric-value">0</div><div class="metric-note" id="metric-dropped-note">0 packets dropped</div></div>
+      </section>
+
+      <section class="canvas-card" id="network-section">
+        <div class="canvas-bar"><div><h2>Topology workspace <span class="canvas-hint">INTERACTIVE</span></h2><p id="topology-subtitle">Drag devices, create connections, inspect routes, and watch packet flow.</p></div><div class="canvas-actions"><button id="fit-btn" title="Fit network">⤢</button><button id="preview-btn" title="Preview best available route">↗ Preview route</button><button id="compare-btn" title="Compare routing modes">≋ Compare</button></div></div>
+        <div class="manage-bar" aria-label="Network editing tools">
+          <div class="manage-head"><strong>Manage topology</strong><span>Choose what to remove, or click it on the canvas</span></div>
+          <div class="manage-actions">
+            <label class="manage-picker">Device <select id="manage-device" aria-label="Device to manage"></select></label>
+            <button id="delete-device" class="btn-delete" title="Remove selected device and its connections">Delete device</button>
+            <label class="manage-picker">Connection <select id="manage-link" aria-label="Connection to manage"></select></label>
+            <button id="delete-link" class="btn-delete" title="Remove selected network connection">Delete connection</button>
+          </div>
+        </div>
+        <div id="route-feedback" class="route-feedback" role="status" aria-live="polite">Choose a source and destination, then select <b>Preview route</b>.</div>
+        <div class="canvas-wrap">
+          <svg id="network-svg" viewBox="0 0 900 530" role="img" aria-label="Interactive network topology"><defs><pattern id="dot-grid" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#dcebf3"/></pattern><filter id="route-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="0" y="0" width="900" height="530" fill="url(#dot-grid)"/></svg>
+          <div id="canvas-hint" class="canvas-hint-toast" hidden>Choose the first device to connect</div>
+          <div class="canvas-radar"><span class="radar-ring"></span><span class="radar-dot"></span>LIVE TOPOLOGY</div>
+          <div id="selection-hud" class="selection-hud" hidden><span id="selected-label"></span><button id="selection-remove">Remove selection</button></div>
+          <div class="canvas-overlay-left"><span class="legend-dot cyan-dot"></span> Network link <span class="legend-dot green-dot"></span> Selected route <span class="legend-dot red-dot"></span> Untrusted</div>
+          <div class="canvas-overlay-right"><span id="canvas-device-count">0 devices</span><span class="overlay-sep">·</span><span id="canvas-link-count">0 connections</span></div>
+          <div id="empty-network" class="empty-network" hidden><div>◈</div><h3>Your canvas is ready</h3><p>Add a device from the left sidebar to start designing your topology.</p></div>
+        </div>
+      </section>
+
+      <section class="bottom-section">
+        <div class="chart-card"><div class="bottom-heading"><div><h3>Traffic Analytics</h3><p>Live packet counters across simulation steps</p></div><span class="chart-tag">PACKETS</span></div><div class="chart-legend"><span><i class="legend-line green-line"></i> Delivered</span><span><i class="legend-line red-line"></i> Dropped</span><span><i class="legend-line yellow-line"></i> Queued</span></div><svg id="trend-chart" viewBox="0 0 600 130" preserveAspectRatio="none" aria-label="Traffic statistics chart"></svg></div>
+        <div class="activity-card" id="activity-section"><div class="bottom-heading"><div><h3>Agent Communication</h3><p>Orchestrator task messages</p></div><span class="activity-pill"><span class="live-dot"></span> ACTIVITY</span></div><div id="activity-list" class="activity-list"><div class="muted-empty">Run traffic to see messages from your agents.</div></div></div>
+      </section>
+    </main>
+
+    <aside class="inspector">
+      <div class="inspector-top"><div><div class="eyebrow">OPERATIONS PANEL</div><h2>Simulation Controls</h2></div><span class="control-icon">⚙</span></div>
+      <div class="scenario-jumps" role="group" aria-label="Jump to controls"><button id="jump-traffic" class="jump-chip">Traffic</button><button id="jump-attack" class="jump-chip">Attack</button><button id="jump-congestion" class="jump-chip">Congestion</button></div>
+      <div class="inspector-scroll" id="control-scroll">
+        <div class="control-card"><div class="block-heading"><span>◈</span> Routing intelligence</div><label for="route-mode">Routing algorithm</label><select id="route-mode"><option value="qlearning">Q-Learning · Adaptive</option><option value="dijkstra">Dijkstra · Shortest path</option></select><div class="setting-note">Decisions come from your existing Python agents.</div></div>
+        <div id="scenario-section" class="scenario-header"><span class="section-kicker">TESTING WORKSPACE</span><h3>Scenario Studio</h3><p>Configure simulated attacks and congestion. Then run traffic to see your agents respond.</p></div>
+        <div class="control-card scenario-card attack-card" id="attack-panel">
+          <div class="block-heading"><span>⬡</span> Attack simulation <span class="pill-sim">SIMULATED</span></div>
+          <p class="panel-help">Choose the router or switch that should behave unreliably.</p>
+          <label for="attack-device">Target device</label><select id="attack-device"></select>
+          <label for="attack-mode">Simulated behavior</label><select id="attack-mode"><option value="normal">Normal · No packet drops</option><option value="blackhole">Blackhole · Drop all forwarded packets</option><option value="grayhole">Grayhole · Drop some forwarded packets</option></select>
+          <div class="scenario-actions"><button id="attack-apply" class="scenario-primary">Apply scenario</button><button id="attack-restore" class="scenario-secondary">Restore</button></div>
+          <div id="attack-status" class="scenario-status">Select a router or switch.</div>
+        </div>
+        <div class="control-card scenario-card congestion-card" id="congestion-panel">
+          <div class="block-heading"><span>≋</span> Congestion control <span class="pill-sim">AGENT ACTIVE</span></div>
+          <p class="panel-help">Reduce a router's capacity and generate traffic to demonstrate queuing and rerouting.</p>
+          <label for="congestion-device">Target device</label><select id="congestion-device"></select>
+          <div class="two-col"><label>Packets / step capacity<input id="overload-capacity" type="number" min="1" max="10000" value="2"/></label><label>Queue limit<input id="overload-queue" type="number" min="1" max="100000" value="8"/></label></div>
+          <div class="scenario-actions"><button id="congestion-apply" class="scenario-primary">Apply overload</button><button id="congestion-restore" class="scenario-secondary">Restore</button></div>
+          <div class="preset-row"><button id="traffic-light" class="preset-btn">Light traffic · 1 pkt</button><button id="traffic-heavy" class="preset-btn">Stress test · 12 pkt</button></div>
+          <label class="policy-toggle">Automatic congestion avoidance <input id="congestion-enabled" type="checkbox" checked/></label>
+          <div class="range-row"><label for="congestion-threshold">Congestion threshold</label><span id="congestion-threshold-label">60%</span></div>
+          <input id="congestion-threshold" type="range" min="25" max="95" step="5" value="60"/>
+          <button id="congestion-save-policy" class="policy-btn">Save congestion policy</button>
+          <div id="congestion-status" class="scenario-status">Queues and routing updates appear when traffic runs.</div>
+        </div>
+        <div class="control-card" id="traffic-panel"><div class="block-heading"><span>⇄</span> Packet traffic</div><div class="two-col"><label>Source<select id="source-select"></select></label><label>Destination<select id="target-select"></select></label></div><div class="two-col"><label>Packets / step<input id="traffic-rate" type="number" value="4" min="0" max="200"/></label><label>Simulation steps<input id="traffic-steps" type="number" value="12" min="1" max="100"/></label></div><div class="range-row"><label for="tick-speed">Step interval</label><span id="speed-label">700 ms</span></div><input id="tick-speed" type="range" min="250" max="1800" step="50" value="700"/><div class="sim-buttons"><button id="run-btn" class="btn-run">▶ Run simulation</button><button id="step-btn" class="btn-step" title="Advance one simulation step">⏭</button></div><button id="drain-btn" class="quiet-link">Process queued packets →</button></div>
+        <div class="control-card"><div class="block-heading"><span>◉</span> Network health <span class="live-dot float-right"></span></div><div class="health-row"><span>Trusted network nodes</span><strong id="health-trusted">—</strong></div><div class="health-row"><span>Congested devices</span><strong id="health-busy">0</strong></div><div class="health-row"><span>Q-Learning entries</span><strong id="health-q">0</strong></div><div class="health-note" id="health-message">All systems ready</div></div>
+        <div class="control-card selected-panel"><div class="block-heading"><span>⌘</span> Selected element</div><div id="inspector-selected"><div class="selected-placeholder"><span>⌖</span><p>Select a device or connection on the canvas to inspect or configure it.</p></div></div></div>
+        <div class="control-card small-settings"><div class="block-heading"><span>▦</span> Topology files</div><div class="file-actions"><button id="import-btn" class="btn-outline">↥ Import JSON</button><button id="example-btn" class="btn-outline">↺ Example</button></div><button id="clear-btn" class="danger-text">Clear canvas</button></div>
+      </div>
+    </aside>
+  </div>
+  <div id="modal-overlay" class="modal-overlay" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><div class="dialog-header"><div><div class="eyebrow">NETWORK DESIGNER</div><h2 id="dialog-title">Add device</h2></div><button id="modal-close" class="modal-close" aria-label="Close">×</button></div><form id="add-form"><label>Device type<select id="add-kind"><option value="PC">Computer (PC)</option><option value="ROUTER">Router</option><option value="SWITCH">Switch</option><option value="SERVER">Server</option></select></label><label>Device name<input id="add-name" required maxlength="28" placeholder="e.g. R3" autocomplete="off"/></label><div class="two-col"><label>Processing capacity<input id="add-capacity" type="number" min="1" value="20" required/></label><label>Queue limit<input id="add-queue" type="number" min="1" value="50" required/></label></div><div class="form-footer"><button type="button" id="modal-cancel" class="btn-outline">Cancel</button><button type="submit" class="btn-run">Create device</button></div></form></div></div>
+  <input type="file" id="import-input" accept=".json,application/json" hidden/>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
